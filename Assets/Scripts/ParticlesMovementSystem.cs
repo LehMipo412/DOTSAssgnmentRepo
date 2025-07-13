@@ -1,3 +1,4 @@
+using System.Numerics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -8,6 +9,12 @@ using Unity.Transforms;
 public partial struct ParticleUpdateSystem : ISystem
 {
     private const float gravity = -9.81f;
+    private Vector3 endPos;
+
+    public void AssignEndPos(Vector3 target)
+    {
+        endPos = target;
+    }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
@@ -23,12 +30,20 @@ public partial struct ParticleUpdateSystem : ISystem
             if (particle.ValueRW.IsAscent)
             {
                 // Update the ascent phase (move upwards)
-                particle.ValueRW.Position += (particle.ValueRW.Velocity * deltaTime);
+                //particle.ValueRW.Position += (particle.ValueRW.Velocity * deltaTime); //not needed anymore
                 particle.ValueRW.AscentTime += deltaTime;
 
                 // Transition to explosion phase after 2 seconds
                 if (particle.ValueRW.AscentTime >= 2f)
                 {
+                    // correct position (needs fixing later)
+                    if (particle.ValueRW.IsAscent)
+                    {
+                        //particle.ValueRW.Position = PositionReader.ExplosionEndPos;
+                        //Hard-coded result
+                        particle.ValueRW.Position = new float3(0f, 20f, 0f);
+                    }
+
                     particle.ValueRW.IsAscent = false;
 
                     // Switch to explosion phase (random direction)

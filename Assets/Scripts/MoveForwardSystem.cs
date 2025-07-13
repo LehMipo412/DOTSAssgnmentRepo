@@ -41,11 +41,12 @@ public partial class ParticleSpawnerSystem : SystemBase
 
             // Correct the initial velocity to go upwards (positive Y-axis)
             float3 velocity = new float3(0f, UnityEngine.Random.Range(8f, 12f), 0f); // Ensure Y is positive
+            
             commandBuffer.SetComponent(e, new MoveForward
             {
                 Velocity = velocity,     // Positive Y velocity for ascent
                 Position = spawnPosition,
-                Lifetime = 0,
+                Lifetime = 0f,
                 MaxLifetime = 2f,        // Total lifetime (including ascent and explosion)
                 Size = 1f,
                 MaxSpeed = 10f,
