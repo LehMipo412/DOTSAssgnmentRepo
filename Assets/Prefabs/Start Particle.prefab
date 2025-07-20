@@ -101,11 +101,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialVelocityMin:
     x: 0
-    y: 5
+    y: 15
     z: 5
   initialVelocityMax:
     x: 0
-    y: 8
+    y: 20
     z: 7
   maxVelocity:
     x: 50
@@ -117,5 +117,5 @@ MonoBehaviour:
     z: 0
   lifetime: 2
   toSpawnOnDeath: {fileID: 0}
-  spawnCount: 50
+  spawnCount: 128
   prefab: 0

@@ -34,7 +34,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
       propertyPath: initialVelocityMax.y
-      value: 5
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
       propertyPath: initialVelocityMax.z
@@ -46,7 +46,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
       propertyPath: initialVelocityMin.y
-      value: -5
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
       propertyPath: initialVelocityMin.z
