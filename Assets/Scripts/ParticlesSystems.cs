@@ -226,18 +226,17 @@ public partial struct SetInitialVelocitySystem : ISystem
 	public void OnUpdate(ref SystemState state)
 	{
 		var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-		state.Dependency = new SetInitialVelocityJob() { ecb = endSimulationECB, random = new((uint)SystemAPI.Time.ElapsedTime + 1) }.Schedule(_entityQuery, state.Dependency);
+		state.Dependency = new SetInitialVelocityJob() { ecb = endSimulationECB }.Schedule(_entityQuery, state.Dependency);
 	}
 
 	[BurstCompile]
 	private partial struct SetInitialVelocityJob : IJobEntity
 	{
 		public EntityCommandBuffer ecb;
-		public Random random;
 
 		public readonly void Execute(in InitialVelocity initialVelocity, Entity entity)
 		{
-			ecb.AddComponent<Velocity>(entity, random.NextFloat3(initialVelocity.min, initialVelocity.max));
+			ecb.AddComponent<Velocity>(entity, new Random((uint)System.HashCode.Combine(entity.Index, entity.Version)).NextFloat3(initialVelocity.min, initialVelocity.max));
 			ecb.RemoveComponent<InitialVelocity>(entity);
 		}
 	}
@@ -279,7 +278,7 @@ public partial struct SpawnEntityOnDeath : ISystem
 
 	private void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<SpawnOnLifeTimeExpireCleanup>().WithNone<SpawnOnLifeTimeExpire>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithAll<SpawnOnLifeTimeExpireCleanup>().WithNone<LifeTime>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -287,12 +286,12 @@ public partial struct SpawnEntityOnDeath : ISystem
 	public void OnUpdate(ref SystemState state)
 	{
 		var endSimulationECB = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-		foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpireCleanup>().WithNone<SpawnOnLifeTimeExpire>().WithEntityAccess())
+		foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpireCleanup>().WithNone<LifeTime>().WithEntityAccess())
 		{
 			var entities = new NativeArray<Entity>(lifetimeExpire.count, Allocator.Temp);
 			endSimulationECB.Instantiate(lifetimeExpire.toSpawn, entities);
 			foreach (var newEntity in entities)
-				endSimulationECB.SetComponent<InitialPosition>(newEntity, lifetimeExpire.position);
+				endSimulationECB.AddComponent<InitialPosition>(newEntity, lifetimeExpire.position);
 			entities.Dispose();
 			endSimulationECB.RemoveComponent<SpawnOnLifeTimeExpireCleanup>(entity);
 		}
