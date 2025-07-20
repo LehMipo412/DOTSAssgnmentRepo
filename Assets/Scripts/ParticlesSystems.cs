@@ -89,6 +89,70 @@ public partial struct ClampVelocity : ISystem
 }
 
 /// <summary>
+/// Slows the velocity as lifetime progresses.
+/// </summary>
+[BurstCompile, UpdateBefore(typeof(ClampVelocity))]
+public partial struct ScaleVelocityWithLifeTime : ISystem
+{
+	private EntityQuery _entityQuery;
+
+	private void OnCreate(ref SystemState state)
+	{
+		_entityQuery = SystemAPI.QueryBuilder().WithAllRW<Velocity>().WithAll<ScaleVelocityOverLifeTime, RemainingLifeTime, InitialVelocity, InitialLifeTime>().Build();
+		state.RequireForUpdate(_entityQuery);
+	}
+
+	[BurstCompile]
+	public void OnUpdate(ref SystemState state)
+	{
+		state.Dependency = new ScaleVelocityJob().ScheduleParallel(_entityQuery, state.Dependency);
+	}
+
+	[BurstCompile]
+	private partial struct ScaleVelocityJob : IJobEntity
+	{
+		public readonly void Execute(ref Velocity velocity, in ScaleVelocityOverLifeTime velocityScale, in RemainingLifeTime lifetime, in InitialVelocity initialVelocity, in InitialLifeTime initialLifeTime)
+		{
+			var lifetimePercent = lifetime * initialLifeTime.inverseLifeTime;
+			var target = initialVelocity.velocity * lifetimePercent;
+			velocity = math.lerp(velocity, target, velocityScale.strength * lifetimePercent);
+		}
+	}
+}
+
+/// <summary>
+/// Shrings the scale as lifetime progresses.
+/// </summary>
+[BurstCompile, UpdateBefore(typeof(TransformSystemGroup))]
+public partial struct ScaleSizeWithLifeTime : ISystem
+{
+	private EntityQuery _entityQuery;
+
+	private void OnCreate(ref SystemState state)
+	{
+		_entityQuery = SystemAPI.QueryBuilder().WithAllRW<LocalTransform>().WithAll<ScaleSizeOverLifeTime, RemainingLifeTime, InitialSize, InitialLifeTime>().Build();
+		state.RequireForUpdate(_entityQuery);
+	}
+
+	[BurstCompile]
+	public void OnUpdate(ref SystemState state)
+	{
+		state.Dependency = new ScaleVelocityJob().ScheduleParallel(_entityQuery, state.Dependency);
+	}
+
+	[BurstCompile]
+	private partial struct ScaleVelocityJob : IJobEntity
+	{
+		public readonly void Execute(ref LocalTransform transform, in ScaleSizeOverLifeTime sizeScale, in RemainingLifeTime lifetime, in InitialSize initialSize, in InitialLifeTime initialLifeTime)
+		{
+			var lifetimePercent = lifetime * initialLifeTime.inverseLifeTime;
+			var target = initialSize.size * lifetimePercent;
+			transform.Scale = math.lerp(transform.Scale, target, sizeScale.strength * lifetimePercent);
+		}
+	}
+}
+
+/// <summary>
 /// Applies gravity.
 /// </summary>
 [BurstCompile, UpdateBefore(typeof(ClampVelocity))]
@@ -128,7 +192,7 @@ public partial struct LifeTimeSystem : ISystem
 
 	public void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithPresentRW<LifeTime>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithPresentRW<RemainingLifeTime>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -148,7 +212,7 @@ public partial struct LifeTimeSystem : ISystem
 		public NativeQueue<Entity>.ParallelWriter toDestroy;
 		public float deltaTime;
 
-		public readonly void Execute(ref LifeTime lifetime, Entity entity)
+		public readonly void Execute(ref RemainingLifeTime lifetime, Entity entity)
 		{
 			lifetime -= deltaTime;
 			if (lifetime <= 0f)
@@ -218,7 +282,7 @@ public partial struct SetInitialVelocitySystem : ISystem
 
 	public void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<InitialVelocity>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithAll<RandomInitialVelocity>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -234,10 +298,12 @@ public partial struct SetInitialVelocitySystem : ISystem
 	{
 		public EntityCommandBuffer ecb;
 
-		public readonly void Execute(in InitialVelocity initialVelocity, Entity entity)
+		public readonly void Execute(in RandomInitialVelocity randomInitialVelocity, Entity entity)
 		{
-			ecb.AddComponent<Velocity>(entity, new Random((uint)System.HashCode.Combine(entity.Index, entity.Version)).NextFloat3(initialVelocity.min, initialVelocity.max));
-			ecb.RemoveComponent<InitialVelocity>(entity);
+			var velocity = new Random((uint)System.HashCode.Combine(entity.Index, entity.Version)).NextFloat3(randomInitialVelocity.min, randomInitialVelocity.max);
+			ecb.RemoveComponent<RandomInitialVelocity>(entity);
+			ecb.AddComponent<InitialVelocity>(entity, velocity);
+			ecb.AddComponent<Velocity>(entity, velocity);
 		}
 	}
 }
@@ -278,7 +344,7 @@ public partial struct SpawnEntityOnDeath : ISystem
 
 	private void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<SpawnOnLifeTimeExpireCleanup>().WithNone<LifeTime>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithAll<SpawnOnLifeTimeExpireCleanup>().WithNone<RemainingLifeTime>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -286,7 +352,7 @@ public partial struct SpawnEntityOnDeath : ISystem
 	public void OnUpdate(ref SystemState state)
 	{
 		var endSimulationECB = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-		foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpireCleanup>().WithNone<LifeTime>().WithEntityAccess())
+		foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpireCleanup>().WithNone<RemainingLifeTime>().WithEntityAccess())
 		{
 			var entities = new NativeArray<Entity>(lifetimeExpire.count, Allocator.Temp);
 			endSimulationECB.Instantiate(lifetimeExpire.toSpawn, entities);

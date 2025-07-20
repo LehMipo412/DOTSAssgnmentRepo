@@ -14,15 +14,23 @@ public struct SpawnOnLifeTimeExpireCleanup : ICleanupComponentData
 	public int count;
 }
 
-public struct InitialVelocity : IComponentData
+public struct RandomInitialVelocity : IComponentData
 {
 	public float3 min, max;
 
-	public InitialVelocity(float3 min, float3 max)
+	public RandomInitialVelocity(float3 min, float3 max)
 	{
 		this.min = min;
 		this.max = max;
 	}
+}
+
+public struct InitialVelocity : IComponentData
+{
+	public float3 velocity;
+
+	public static implicit operator float3(in InitialVelocity velocity) => velocity.velocity;
+	public static implicit operator InitialVelocity(in float3 velocity) => new() { velocity = velocity };
 }
 
 public struct InitialPosition : IComponentData
@@ -49,12 +57,34 @@ public struct MaxVelocity : IComponentData
 	public static implicit operator MaxVelocity(in float3 maxVelocity) => new() { maxVelocity = maxVelocity };
 }
 
-public struct LifeTime : IComponentData
+public struct RemainingLifeTime : IComponentData
 {
 	public float lifetime;
 
-	public static implicit operator float(LifeTime lifetime) => lifetime.lifetime;
-	public static implicit operator LifeTime(float lifetime) => new() { lifetime = lifetime };
+	public static implicit operator float(RemainingLifeTime lifetime) => lifetime.lifetime;
+	public static implicit operator RemainingLifeTime(float lifetime) => new() { lifetime = lifetime };
+}
+
+public struct InitialLifeTime : IComponentData
+{
+	public float lifetime, inverseLifeTime;
+
+	public InitialLifeTime(float lifetime)
+	{
+		this.lifetime = lifetime;
+		inverseLifeTime = 1f / lifetime;
+	}
+
+	public static implicit operator float(InitialLifeTime lifetime) => lifetime.lifetime;
+	public static implicit operator InitialLifeTime(float lifetime) => new(lifetime);
+}
+
+public struct InitialSize : IComponentData
+{
+	public float size;
+
+	public static implicit operator float(InitialSize size) => size.size;
+	public static implicit operator InitialSize(float size) => new() { size = size };
 }
 
 public struct GravityScale : IComponentData
@@ -63,4 +93,20 @@ public struct GravityScale : IComponentData
 
 	public static implicit operator float3(in GravityScale gravityScale) => gravityScale.gravityScale;
 	public static implicit operator GravityScale(in float3 gravityScale) => new() { gravityScale = gravityScale };
+}
+
+public struct ScaleVelocityOverLifeTime : IComponentData
+{
+	public float3 strength;
+
+	public static implicit operator float3(in ScaleVelocityOverLifeTime strength) => strength.strength;
+	public static implicit operator ScaleVelocityOverLifeTime(in float3 strength) => new() { strength = strength };
+}
+
+public struct ScaleSizeOverLifeTime : IComponentData
+{
+	public float strength;
+
+	public static implicit operator float(ScaleSizeOverLifeTime strength) => strength.strength;
+	public static implicit operator ScaleSizeOverLifeTime(float strength) => new() { strength = strength };
 }
