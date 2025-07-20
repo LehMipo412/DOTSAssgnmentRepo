@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1768403702799630251}
   - component: {fileID: 3323751133087879747}
   m_Layer: 0
-  m_Name: Particle
+  m_Name: Start Particle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41,7 +41,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6675145861077071715}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &1768403702799630251
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -65,7 +65,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 19dd6a997ac36b84baa801c7a34486c7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -100,13 +100,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initialVelocityMin:
-    x: -20
-    y: -20
-    z: -20
+    x: 0
+    y: 5
+    z: 5
   initialVelocityMax:
-    x: 20
-    y: 20
-    z: 20
+    x: 0
+    y: 8
+    z: 7
   maxVelocity:
     x: 50
     y: 50
@@ -118,3 +118,4 @@ MonoBehaviour:
   lifetime: 2
   toSpawnOnDeath: {fileID: 0}
   spawnCount: 50
+  prefab: 0
