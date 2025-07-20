@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 
-public struct SpawnOnDeath : ICleanupComponentData
+public struct SpawnOnLifeTimeExpire : ICleanupComponentData
 {
     public Entity toSpawn;
 	public int count;
@@ -9,8 +9,13 @@ public struct SpawnOnDeath : ICleanupComponentData
 
 public struct InitialVelocity : IComponentData
 {
-	public float3 min;
-	public float3 max;
+	public float3 min, max;
+
+	public InitialVelocity(float3 min, float3 max)
+	{
+		this.min = min;
+		this.max = max;
+	}
 }
 
 public struct Velocity : IComponentData

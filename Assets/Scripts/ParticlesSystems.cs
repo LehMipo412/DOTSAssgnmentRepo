@@ -15,7 +15,7 @@ public partial struct VelocityToTransform : ISystem
 
 	private void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<Velocity, LocalTransform>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithAll<Velocity>().WithAllRW<LocalTransform>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -28,7 +28,6 @@ public partial struct VelocityToTransform : ISystem
 	[BurstCompile]
 	private partial struct MoveJob : IJobEntity
 	{
-		[BurstCompile]
 		public readonly void Execute(in Velocity velocity, ref LocalTransform trans) => trans.Position += velocity;
 	}
 }
@@ -43,7 +42,7 @@ public partial struct ClampVelocity : ISystem
 
 	private void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<Velocity, MaxVelocity>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithAllRW<Velocity>().WithAll<MaxVelocity>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -56,7 +55,6 @@ public partial struct ClampVelocity : ISystem
 	[BurstCompile]
 	private partial struct GravityJob : IJobEntity
 	{
-		[BurstCompile]
 		public readonly void Execute(ref Velocity velocity, in MaxVelocity maxVelocity) => velocity = math.clamp(velocity, -maxVelocity.maxVelocity, maxVelocity);
 	}
 }
@@ -72,7 +70,7 @@ public partial struct GravitySystem : ISystem
 
 	private void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<Velocity, GravityScale>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithAllRW<Velocity>().WithAll<GravityScale>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -87,7 +85,6 @@ public partial struct GravitySystem : ISystem
 	{
 		public float3 gravityTimesDelataTime;
 
-		[BurstCompile]
 		public readonly void Execute(ref Velocity velocity, in GravityScale scale) => velocity -= gravityTimesDelataTime * scale;
 	}
 }
@@ -102,7 +99,7 @@ public partial struct LifeTimeSystem : ISystem
 
 	public void OnCreate(ref SystemState state)
 	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<LifeTime>().Build();
+		_entityQuery = SystemAPI.QueryBuilder().WithPresentRW<LifeTime>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
@@ -122,11 +119,10 @@ public partial struct LifeTimeSystem : ISystem
 		public NativeQueue<Entity>.ParallelWriter toDestroy;
 		public float deltaTime;
 
-		[BurstCompile]
 		public readonly void Execute(ref LifeTime lifetime, Entity entity)
 		{
-			lifetime.lifetime -= deltaTime;
-			if (lifetime.lifetime <= 0f)
+			lifetime -= deltaTime;
+			if (lifetime <= 0f)
 				toDestroy.Enqueue(entity);
 		}
 	}
@@ -175,15 +171,15 @@ public partial struct SetInitialVelocitySystem : ISystem
 		public EntityCommandBuffer ecb;
 		public Random random;
 
-		[BurstCompile]
 		public readonly void Execute(in InitialVelocity initialVelocity, Entity entity)
 		{
-			ecb.SetComponent<Velocity>(entity, random.NextFloat3(initialVelocity.min, initialVelocity.max));
+			ecb.AddComponent<Velocity>(entity, random.NextFloat3(initialVelocity.min, initialVelocity.max));
 			ecb.RemoveComponent<InitialVelocity>(entity);
 		}
 	}
 }
 
+[BurstCompile]
 public partial struct SpawnEntityOnDeath : ISystem
 {
 
