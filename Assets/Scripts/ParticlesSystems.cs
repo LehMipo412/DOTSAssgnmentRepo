@@ -148,3 +148,43 @@ public partial struct LifeTimeSystem : ISystem
 		}
 	}
 }
+
+[BurstCompile]
+public partial struct SetInitialVelocitySystem : ISystem
+{
+	private EntityQuery _entityQuery;
+
+	public void OnCreate(ref SystemState state)
+	{
+		_entityQuery = SystemAPI.QueryBuilder().WithAll<InitialVelocity>().Build();
+		state.RequireForUpdate(_entityQuery);
+	}
+
+	[BurstCompile]
+	public void OnUpdate(ref SystemState state)
+	{
+		var endSimulationECB = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+		var toDestroy = new NativeQueue<Entity>(Allocator.TempJob);
+		state.Dependency = new SetInitialVelocityJob() { ecb = endSimulationECB, random = new((uint)SystemAPI.Time.ElapsedTime) }.Schedule(_entityQuery, state.Dependency);
+		toDestroy.Dispose(state.Dependency);
+	}
+
+	[BurstCompile]
+	private partial struct SetInitialVelocityJob : IJobEntity
+	{
+		public EntityCommandBuffer ecb;
+		public Random random;
+
+		[BurstCompile]
+		public readonly void Execute(in InitialVelocity initialVelocity, Entity entity)
+		{
+			ecb.SetComponent<Velocity>(entity, random.NextFloat3(initialVelocity.min, initialVelocity.max));
+			ecb.RemoveComponent<InitialVelocity>(entity);
+		}
+	}
+}
+
+public partial struct SpawnEntityOnDeath : ISystem
+{
+
+}
