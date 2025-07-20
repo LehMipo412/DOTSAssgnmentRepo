@@ -114,7 +114,7 @@ public partial struct GravitySystem : ISystem
 	{
 		public float3 gravityTimesDeltaTime;
 
-		public readonly void Execute(ref Velocity velocity, in GravityScale scale) => velocity -= gravityTimesDeltaTime * scale;
+		public readonly void Execute(ref Velocity velocity, in GravityScale scale) => velocity += gravityTimesDeltaTime * scale;
 	}
 }
 
