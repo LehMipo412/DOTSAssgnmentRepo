@@ -11,13 +11,15 @@ public class ParticleAuthoring : MonoBehaviour
 	public float lifetime = 2f;
     public GameObject toSpawnOnDeath;
 	public int spawnCount = 50;
+	public bool prefab;
 
 	public class ParticleBaker : Baker<ParticleAuthoring>
 	{
 		public override void Bake(ParticleAuthoring authoring)
 		{
 			var entity = GetEntity(TransformUsageFlags.Dynamic);
-			AddComponent<Prefab>(entity);
+			if (authoring.prefab)
+				AddComponent<Prefab>(entity);
 			AddComponent<InitialVelocity>(entity, new(authoring.initialVelocityMin, authoring.initialVelocityMax));
 			AddComponent<Velocity>(entity);
 			if (math.any(authoring.maxVelocity != float3.zero))

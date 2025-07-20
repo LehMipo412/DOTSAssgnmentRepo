@@ -11,10 +11,9 @@ GameObject:
   - component: {fileID: 4638162311672244270}
   - component: {fileID: 3329059414155201196}
   - component: {fileID: 1768403702799630251}
-  - component: {fileID: 7768931286284570475}
   - component: {fileID: 3323751133087879747}
   m_Layer: 0
-  m_Name: MoveBoyo
+  m_Name: Particle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42,7 +41,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6675145861077071715}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &1768403702799630251
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -88,27 +87,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7768931286284570475
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6675145861077071715}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3323751133087879747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -121,39 +99,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7407572151726e444abddf9786ee5b3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Direction: {x: 1, y: 0, z: 1}
-  Speed: 1
-  shem:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2.6484995
-      outSlope: 2.6484995
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.07016807
-    - serializedVersion: 3
-      time: 0.28161114
-      value: 0.42726457
-      inSlope: 0.024534747
-      outSlope: 0.024534747
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1.1106186
-      value: 0.021339417
-      inSlope: -1.2043124
-      outSlope: -1.2043124
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.010361105
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  poopticle: {fileID: 0}
+  initialVelocityMin:
+    x: -20
+    y: -20
+    z: -20
+  initialVelocityMax:
+    x: 20
+    y: 20
+    z: 20
+  maxVelocity:
+    x: 50
+    y: 50
+    z: 50
+  gravityScale:
+    x: 0
+    y: 1
+    z: 0
+  lifetime: 2
+  toSpawnOnDeath: {fileID: 0}
+  spawnCount: 50

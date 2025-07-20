@@ -1,9 +1,16 @@
 using Unity.Entities;
 using Unity.Mathematics;
 
-public struct SpawnOnLifeTimeExpire : ICleanupComponentData
+public struct SpawnOnLifeTimeExpire : IComponentData
 {
     public Entity toSpawn;
+	public int count;
+}
+
+public struct SpawnOnLifeTimeExpireCleanup : ICleanupComponentData
+{
+	public Entity toSpawn;
+	public float3 position;
 	public int count;
 }
 
@@ -16,6 +23,14 @@ public struct InitialVelocity : IComponentData
 		this.min = min;
 		this.max = max;
 	}
+}
+
+public struct InitialPosition : IComponentData
+{
+	public float3 position;
+
+	public static implicit operator float3(in InitialPosition position) => position.position;
+	public static implicit operator InitialPosition(in float3 position) => new() { position = position };
 }
 
 public struct Velocity : IComponentData
