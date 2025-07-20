@@ -101,20 +101,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialVelocityMin:
     x: 0
-    y: 15
-    z: 5
+    y: 25
+    z: 0
   initialVelocityMax:
     x: 0
-    y: 20
+    y: 30
     z: 7
   maxVelocity:
-    x: 50
-    y: 50
-    z: 50
-  gravityScale:
     x: 0
-    y: 1
+    y: 0
     z: 0
+  gravityScale:
+    x: 1
+    y: 1
+    z: 1
+  scaleVelocityOverLifetime:
+    x: 1
+    y: 0
+    z: 1
+  scaleSizeOverLifeTime: 1
   lifetime: 2
   toSpawnOnDeath: {fileID: 0}
   spawnCount: 128

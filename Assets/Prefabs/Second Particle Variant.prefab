@@ -29,6 +29,30 @@ PrefabInstance:
       value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
+      propertyPath: maxVelocity.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
+      propertyPath: maxVelocity.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
+      propertyPath: maxVelocity.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
+      propertyPath: gravityScale.x
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
+      propertyPath: gravityScale.y
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
+      propertyPath: gravityScale.z
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323751133087879747, guid: 209bc4dee5db90440b2956982649d43a, type: 3}
       propertyPath: initialVelocityMax.x
       value: 5
       objectReference: {fileID: 0}
