@@ -17,6 +17,14 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3416766009719367112, guid: 59e4cb6891ae7bb46b550d21fd4a260e, type: 3}
+      propertyPath: maxLifetime
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3416766009719367112, guid: 59e4cb6891ae7bb46b550d21fd4a260e, type: 3}
+      propertyPath: minlifetime
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3416766009719367112, guid: 59e4cb6891ae7bb46b550d21fd4a260e, type: 3}
       propertyPath: initialVelocityMax.x
       value: 3
       objectReference: {fileID: 0}

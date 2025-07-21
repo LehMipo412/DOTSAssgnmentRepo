@@ -120,7 +120,8 @@ MonoBehaviour:
     y: 0
     z: 1
   scaleSizeOverLifeTime: 1
-  lifetime: 2
+  minlifetime: 2
+  maxLifetime: 2
   toSpawnOnDeath: {fileID: 0}
   spawnCount: 128
   prefab: 0
