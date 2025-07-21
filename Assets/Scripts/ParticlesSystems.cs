@@ -106,7 +106,7 @@ public partial struct ClampVelocity : ISystem
 /// <summary>
 /// Slows the velocity as minlifetime progresses.
 /// </summary>
-[BurstCompile, UpdateBefore(typeof(ClampVelocity))]
+[BurstCompile, UpdateBefore(typeof(ClampVelocity)), UpdateAfter(typeof(LifeTimeSystem))]
 public partial struct ScaleVelocityWithLifeTime : ISystem
 {
 	private EntityQuery _entityQuery;
@@ -199,7 +199,7 @@ public partial struct VelocityToTransform : ISystem
 /// <summary>
 /// Shrinks the scale as minlifetime progresses.
 /// </summary>
-[BurstCompile, UpdateBefore(typeof(TransformSystemGroup))]
+[BurstCompile, UpdateBefore(typeof(TransformSystemGroup)), UpdateAfter(typeof(LifeTimeSystem))]
 public partial struct ScaleSizeWithLifeTime : ISystem
 {
 	private EntityQuery _entityQuery;
