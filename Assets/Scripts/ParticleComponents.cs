@@ -65,6 +65,17 @@ public struct RemainingLifeTime : IComponentData
 	public static implicit operator RemainingLifeTime(float lifetime) => new() { lifetime = lifetime };
 }
 
+public struct RandomInitialLifeTime : IComponentData
+{
+	public float min, max;
+
+	public RandomInitialLifeTime(float min,  float max)
+	{
+		this.min = min;
+		this.max = max;
+	}
+}
+
 public struct InitialLifeTime : IComponentData
 {
 	public float lifetime, inverseLifeTime;
