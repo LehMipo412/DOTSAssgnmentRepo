@@ -104,7 +104,7 @@ public partial struct ClampVelocity : ISystem
 }
 
 /// <summary>
-/// Slows the velocity as lifetime progresses.
+/// Slows the velocity as minlifetime progresses.
 /// </summary>
 [BurstCompile, UpdateBefore(typeof(ClampVelocity))]
 public partial struct ScaleVelocityWithLifeTime : ISystem
@@ -197,7 +197,7 @@ public partial struct VelocityToTransform : ISystem
 
 #region SIZE
 /// <summary>
-/// Shrinks the scale as lifetime progresses.
+/// Shrinks the scale as minlifetime progresses.
 /// </summary>
 [BurstCompile, UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct ScaleSizeWithLifeTime : ISystem
@@ -231,7 +231,7 @@ public partial struct ScaleSizeWithLifeTime : ISystem
 
 #region LIFETIME
 /// <summary>
-/// Counts the lifetime of the entity, and destroys it if lifetime reaches 0.
+/// Counts the minlifetime of the entity, and destroys it if minlifetime reaches 0.
 /// </summary>
 [BurstCompile, UpdateInGroup(typeof(SimulationSystemGroup))]
 public partial struct LifeTimeSystem : ISystem
@@ -282,6 +282,44 @@ public partial struct LifeTimeSystem : ISystem
 				ecb.DestroyEntity(temp);
 				temp.Dispose();
 			}
+		}
+	}
+}
+
+/// <summary>
+/// Sets the initial velocity of the entity when it first spawns.
+/// </summary>
+[BurstCompile, UpdateInGroup(typeof(InitializationSystemGroup)), UpdateBefore(typeof(EndInitializationEntityCommandBufferSystem))]
+public partial struct SetInitialLifeTime : ISystem
+{
+	private EntityQuery _entityQuery;
+
+	public void OnCreate(ref SystemState state)
+	{
+		_entityQuery = SystemAPI.QueryBuilder().WithAll<RandomInitialLifeTime>().Build();
+		state.RequireForUpdate(_entityQuery);
+	}
+
+	[BurstCompile]
+	public void OnUpdate(ref SystemState state)
+	{
+		var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+		state.Dependency = new SetInitialLifeTimeJob() { ecb = endSimulationECB }.Schedule(_entityQuery, state.Dependency);
+	}
+
+	[BurstCompile]
+	private partial struct SetInitialLifeTimeJob : IJobEntity
+	{
+		public EntityCommandBuffer ecb;
+
+		public readonly void Execute(in RandomInitialLifeTime randomInitialLifeTime, Entity entity)
+		{
+			var random = new Random((uint)entity.Index);
+			random.NextFloat();
+			var lifetime = random.NextFloat(randomInitialLifeTime.min, randomInitialLifeTime.max);
+			ecb.RemoveComponent<RandomInitialLifeTime>(entity);
+			ecb.AddComponent<InitialLifeTime>(entity, lifetime);
+			ecb.AddComponent<RemainingLifeTime>(entity, lifetime);
 		}
 	}
 }
