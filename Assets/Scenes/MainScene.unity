@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47642e9a7e1d2c944bc6909d3b5dc10b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  executivePrimeSusNum: 541
+  executivePrimeSusNum: 100000002
 --- !u!1 &39810491
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,7 +208,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08f5eb0312ebed94c9f456f31e74c12a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  primeSusNumber: 2147483647
+  primeSusNumber: 100000002
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0

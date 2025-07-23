@@ -10,7 +10,8 @@ public class PrimeFinder : MonoBehaviour
    public void CheckIfPrime()
     {
         bool isPrime = true;
-        for (int i = 2; i <= Mathf.Sqrt(primeSusNumber); i++)
+        float squareRoot = Mathf.Sqrt(primeSusNumber);
+        for (int i = 2; i <= squareRoot; i++)
         {
             if (primeSusNumber%i ==0)
             {
