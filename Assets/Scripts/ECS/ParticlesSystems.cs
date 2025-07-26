@@ -23,10 +23,10 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
-			var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-			state.Dependency = new SetInitialVelocityJob() { ecb = endSimulationECB }.Schedule(_entityQuery, state.Dependency);
+			var ecb = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+			state.Dependency = new SetInitialVelocityJob() { ecb = ecb }.Schedule(_entityQuery, state.Dependency);
 		}
 
 		[BurstCompile]
@@ -59,7 +59,7 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
 			state.Dependency = new GravityJob().ScheduleParallel(_entityQuery, state.Dependency);
 		}
@@ -86,7 +86,7 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
 			state.Dependency = new ScaleVelocityJob().ScheduleParallel(_entityQuery, state.Dependency);
 		}
@@ -119,7 +119,7 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
 			state.Dependency = new GravityJob() { gravityTimesDeltaTime = GRAVITY * SystemAPI.Time.DeltaTime }.ScheduleParallel(_entityQuery, state.Dependency);
 		}
@@ -148,7 +148,7 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
 			state.Dependency = new MoveJob() { deltaTime = SystemAPI.Time.DeltaTime }.ScheduleParallel(_entityQuery, state.Dependency);
 		}
@@ -179,7 +179,7 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
 			state.Dependency = new ScaleVelocityJob().ScheduleParallel(_entityQuery, state.Dependency);
 		}
@@ -213,12 +213,12 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
-			var endSimulationECB = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+			var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
 			var toDestroy = new NativeQueue<Entity>(Allocator.TempJob);
 			state.Dependency = new LifeTimeJob() { deltaTime = SystemAPI.Time.DeltaTime, toDestroy = toDestroy.AsParallelWriter() }.ScheduleParallel(_entityQuery, state.Dependency);
-			state.Dependency = new DestroyWithECBQueueJob() { toDestroy = toDestroy, ecb = endSimulationECB }.Schedule(state.Dependency);
+			state.Dependency = new DestroyWithECBQueueJob() { toDestroy = toDestroy, ecb = ecb }.Schedule(state.Dependency);
 			toDestroy.Dispose(state.Dependency);
 		}
 
@@ -268,10 +268,10 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
-			var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-			state.Dependency = new SetInitialLifeTimeJob() { ecb = endSimulationECB }.Schedule(_entityQuery, state.Dependency);
+			var ecb = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+			state.Dependency = new SetInitialLifeTimeJob() { ecb = ecb }.Schedule(_entityQuery, state.Dependency);
 		}
 
 		[BurstCompile]
@@ -306,13 +306,13 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
-			var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+			var ecb = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
 			foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpire>().WithNone<SpawnOnLifeTimeExpireCleanup>().WithEntityAccess())
 			{
-				endSimulationECB.RemoveComponent<SpawnOnLifeTimeExpire>(entity);
-				endSimulationECB.AddComponent<SpawnOnLifeTimeExpireCleanup>(entity, new() { toSpawn = lifetimeExpire.toSpawn, count = lifetimeExpire.count });
+				ecb.RemoveComponent<SpawnOnLifeTimeExpire>(entity);
+				ecb.AddComponent<SpawnOnLifeTimeExpireCleanup>(entity, new() { toSpawn = lifetimeExpire.toSpawn, count = lifetimeExpire.count });
 			}
 		}
 	}
@@ -332,7 +332,7 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
 			state.Dependency = new SetPositionJob().ScheduleParallel(_entityQuery, state.Dependency);
 		}
@@ -359,7 +359,7 @@ namespace ECS
 		}
 
 		[BurstCompile]
-		public readonly void OnUpdate(ref SystemState state)
+		public void OnUpdate(ref SystemState state)
 		{
 			var ecb = new EntityCommandBuffer(Allocator.Temp);
 			foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpireCleanup>().WithNone<RemainingLifeTime>().WithEntityAccess())
