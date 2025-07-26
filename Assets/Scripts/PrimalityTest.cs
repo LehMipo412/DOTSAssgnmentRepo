@@ -52,8 +52,7 @@ public class PrimalityTest : MonoBehaviour
 
 	private static bool IsPrimeSerial(uint n, uint start, uint end)
 	{
-		var squareRoot = SqRoot(n);
-		for (uint i = 2; i <= squareRoot; i++)
+		for (uint i = start; i <= end; i++)
 		{
 			if (n % i == 0)
 				return false;
@@ -67,9 +66,9 @@ public class PrimalityTest : MonoBehaviour
 	[BurstCompile]
 	private static bool IsPrimeJob(uint n, uint start, uint end)
 	{
-		const int MIN_BATCH_SIZE = 128;
+		const int BATCH_SIZE = 128;
 		NativeArray<uint> results = new(JobsUtility.ThreadIndexCount, Allocator.TempJob);
-		var primalityTestHandle = new BruteForcePrimalityTestJob(n, start, results).Schedule(arrayLength: (int)(end - start), indicesPerJobCount: MIN_BATCH_SIZE);
+		var primalityTestHandle = new BruteForcePrimalityTestJob(n, start, results).Schedule(arrayLength: (int)(end - start), indicesPerJobCount: BATCH_SIZE);
 		primalityTestHandle.Complete();
 		var isPrime = !results.Any(r => r != 0);
 		results.Dispose();
