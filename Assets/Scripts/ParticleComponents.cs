@@ -33,14 +33,6 @@ public struct InitialVelocity : IComponentData
 	public static implicit operator InitialVelocity(in float3 velocity) => new() { velocity = velocity };
 }
 
-public struct InitialPosition : IComponentData
-{
-	public float3 position;
-
-	public static implicit operator float3(in InitialPosition position) => position.position;
-	public static implicit operator InitialPosition(in float3 position) => new() { position = position };
-}
-
 public struct Velocity : IComponentData
 {
 	public float3 velocity;

@@ -5,40 +5,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 
-/// <summary>
-/// Sets the initial position of the entity when it first spawns.
-/// </summary>
-[BurstCompile, UpdateInGroup(typeof(InitializationSystemGroup)), UpdateBefore(typeof(EndInitializationEntityCommandBufferSystem))]
-public partial struct SetInitialPositionSystem : ISystem
-{
-	private EntityQuery _entityQuery;
-
-	public void OnCreate(ref SystemState state)
-	{
-		_entityQuery = SystemAPI.QueryBuilder().WithAll<InitialPosition>().WithAllRW<LocalTransform>().Build();
-		state.RequireForUpdate(_entityQuery);
-	}
-
-	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
-	{
-		var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-		state.Dependency = new SetInitialPositionJob() { ecb = endSimulationECB }.Schedule(_entityQuery, state.Dependency);
-	}
-
-	[BurstCompile]
-	private partial struct SetInitialPositionJob : IJobEntity
-	{
-		public EntityCommandBuffer ecb;
-
-		public readonly void Execute(in InitialPosition initialPosition, ref LocalTransform transform, Entity entity)
-		{
-			transform.Position = initialPosition;
-			ecb.RemoveComponent<InitialPosition>(entity);
-		}
-	}
-}
-
 #region VELOCITY
 /// <summary>
 /// Sets the initial velocity of the entity when it first spawns.
@@ -55,7 +21,7 @@ public partial struct SetInitialVelocitySystem : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
 		state.Dependency = new SetInitialVelocityJob() { ecb = endSimulationECB }.Schedule(_entityQuery, state.Dependency);
@@ -91,7 +57,7 @@ public partial struct ClampVelocity : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		state.Dependency = new GravityJob().ScheduleParallel(_entityQuery, state.Dependency);
 	}
@@ -104,7 +70,7 @@ public partial struct ClampVelocity : ISystem
 }
 
 /// <summary>
-/// Slows the velocity as minlifetime progresses.
+/// Slows the velocity as remaining lifetime lowers.
 /// </summary>
 [BurstCompile, UpdateBefore(typeof(ClampVelocity)), UpdateAfter(typeof(LifeTimeSystem))]
 public partial struct ScaleVelocityWithLifeTime : ISystem
@@ -118,7 +84,7 @@ public partial struct ScaleVelocityWithLifeTime : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		state.Dependency = new ScaleVelocityJob().ScheduleParallel(_entityQuery, state.Dependency);
 	}
@@ -151,7 +117,7 @@ public partial struct GravitySystem : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		state.Dependency = new GravityJob() { gravityTimesDeltaTime = GRAVITY * SystemAPI.Time.DeltaTime }.ScheduleParallel(_entityQuery, state.Dependency);
 	}
@@ -180,7 +146,7 @@ public partial struct VelocityToTransform : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		state.Dependency = new MoveJob() { deltaTime = SystemAPI.Time.DeltaTime }.ScheduleParallel(_entityQuery, state.Dependency);
 	}
@@ -197,7 +163,7 @@ public partial struct VelocityToTransform : ISystem
 
 #region SIZE
 /// <summary>
-/// Shrinks the scale as minlifetime progresses.
+/// Shrinks the scale as remaining lifetime lowers.
 /// </summary>
 [BurstCompile, UpdateBefore(typeof(TransformSystemGroup)), UpdateAfter(typeof(LifeTimeSystem))]
 public partial struct ScaleSizeWithLifeTime : ISystem
@@ -211,7 +177,7 @@ public partial struct ScaleSizeWithLifeTime : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		state.Dependency = new ScaleVelocityJob().ScheduleParallel(_entityQuery, state.Dependency);
 	}
@@ -231,7 +197,7 @@ public partial struct ScaleSizeWithLifeTime : ISystem
 
 #region LIFETIME
 /// <summary>
-/// Counts the minlifetime of the entity, and destroys it if minlifetime reaches 0.
+/// Counts the remaining lifetime of the entity, and destroys the entity if it reaches 0.
 /// </summary>
 [BurstCompile, UpdateInGroup(typeof(SimulationSystemGroup))]
 public partial struct LifeTimeSystem : ISystem
@@ -245,7 +211,7 @@ public partial struct LifeTimeSystem : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		var endSimulationECB = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
 		var toDestroy = new NativeQueue<Entity>(Allocator.TempJob);
@@ -274,14 +240,13 @@ public partial struct LifeTimeSystem : ISystem
 		[ReadOnly] public NativeQueue<Entity> toDestroy;
 		public EntityCommandBuffer ecb;
 
-		public void Execute()
+		public readonly void Execute()
 		{
-			if (toDestroy.Count > 0)
-			{
-				var temp = toDestroy.ToArray(Allocator.Temp);
-				ecb.DestroyEntity(temp);
-				temp.Dispose();
-			}
+			if (toDestroy.Count <= 0)
+				return;
+			var temp = toDestroy.ToArray(Allocator.Temp);
+			ecb.DestroyEntity(temp);
+			temp.Dispose();
 		}
 	}
 }
@@ -301,7 +266,7 @@ public partial struct SetInitialLifeTime : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
 		state.Dependency = new SetInitialLifeTimeJob() { ecb = endSimulationECB }.Schedule(_entityQuery, state.Dependency);
@@ -332,20 +297,20 @@ public partial struct AddCleanUpComponent : ISystem
 {
 	private EntityQuery _entityQuery;
 
-	private void OnCreate(ref SystemState state)
+	public void OnCreate(ref SystemState state)
 	{
 		_entityQuery = SystemAPI.QueryBuilder().WithAll<SpawnOnLifeTimeExpire>().WithNone<SpawnOnLifeTimeExpireCleanup>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		var endSimulationECB = SystemAPI.GetSingleton<EndInitializationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
 		foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpire>().WithNone<SpawnOnLifeTimeExpireCleanup>().WithEntityAccess())
 		{
-			endSimulationECB.AddComponent<SpawnOnLifeTimeExpireCleanup>(entity, new() { toSpawn = lifetimeExpire.toSpawn, count = lifetimeExpire.count });
 			endSimulationECB.RemoveComponent<SpawnOnLifeTimeExpire>(entity);
+			endSimulationECB.AddComponent<SpawnOnLifeTimeExpireCleanup>(entity, new() { toSpawn = lifetimeExpire.toSpawn, count = lifetimeExpire.count });
 		}
 	}
 }
@@ -353,7 +318,7 @@ public partial struct AddCleanUpComponent : ISystem
 /// <summary>
 /// Sets the last position of the entity.
 /// </summary>
-[BurstCompile, UpdateAfter(typeof(TransformSystemGroup))]
+[BurstCompile, UpdateAfter(typeof(VelocityToTransform)), UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct SetDeathPosition : ISystem
 {
 	private EntityQuery _entityQuery;
@@ -365,7 +330,7 @@ public partial struct SetDeathPosition : ISystem
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
 		state.Dependency = new SetPositionJob().ScheduleParallel(_entityQuery, state.Dependency);
 	}
@@ -380,30 +345,34 @@ public partial struct SetDeathPosition : ISystem
 /// <summary>
 /// Causes entities marked with <see cref="SpawnOnLifeTimeExpire"/> to spawn their entities on the last position.
 /// </summary>
-[BurstCompile, UpdateAfter(typeof(LifeTimeSystem)), UpdateBefore(typeof(EndSimulationEntityCommandBufferSystem))]
+[BurstCompile, UpdateAfter(typeof(SetDeathPosition)), UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct SpawnEntityOnDeath : ISystem
 {
 	private EntityQuery _entityQuery;
 
-	private void OnCreate(ref SystemState state)
+	public void OnCreate(ref SystemState state)
 	{
 		_entityQuery = SystemAPI.QueryBuilder().WithAll<SpawnOnLifeTimeExpireCleanup>().WithNone<RemainingLifeTime>().Build();
 		state.RequireForUpdate(_entityQuery);
 	}
 
 	[BurstCompile]
-	public void OnUpdate(ref SystemState state)
+	public readonly void OnUpdate(ref SystemState state)
 	{
-		var endSimulationECB = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
+		var ecb = new EntityCommandBuffer(Allocator.Temp);
 		foreach ((var lifetimeExpire, var entity) in SystemAPI.Query<SpawnOnLifeTimeExpireCleanup>().WithNone<RemainingLifeTime>().WithEntityAccess())
 		{
-			var entities = new NativeArray<Entity>(lifetimeExpire.count, Allocator.Temp);
-			endSimulationECB.Instantiate(lifetimeExpire.toSpawn, entities);
+			var spawnTransform = state.EntityManager.GetComponentData<LocalTransform>(lifetimeExpire.toSpawn);
+			spawnTransform.Position = lifetimeExpire.position;
+			NativeArray<Entity> entities = new(lifetimeExpire.count, Allocator.Temp);
+			ecb.Instantiate(lifetimeExpire.toSpawn, entities);
 			foreach (var newEntity in entities)
-				endSimulationECB.AddComponent<InitialPosition>(newEntity, lifetimeExpire.position);
+				ecb.SetComponent(newEntity, spawnTransform);
 			entities.Dispose();
-			endSimulationECB.RemoveComponent<SpawnOnLifeTimeExpireCleanup>(entity);
+			ecb.RemoveComponent<SpawnOnLifeTimeExpireCleanup>(entity);
 		}
+		ecb.Playback(state.EntityManager);
+		ecb.Dispose();
 	}
 }
 #endregion
