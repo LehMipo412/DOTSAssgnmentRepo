@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine.Serialization;
 
 public class ParticleAuthoring : MonoBehaviour
 {
@@ -9,7 +10,8 @@ public class ParticleAuthoring : MonoBehaviour
 	public float3 gravityScale = new(0f, 1f, 0f);
 	public float3 scaleVelocityOverLifetime = new(1f, 0f, 1f);
 	public float scaleSizeOverLifeTime = 1f;
-	public float minlifetime = 2f, maxLifetime = 3f;
+	[FormerlySerializedAs("minlifetime")] public float minLifetime = 2f;
+	public float maxLifetime = 3f;
     public GameObject toSpawnOnDeath;
 	public int spawnCount = 50;
 	public bool prefab;
@@ -39,13 +41,13 @@ public class ParticleAuthoring : MonoBehaviour
 			if (authoring.toSpawnOnDeath && authoring.spawnCount > 0)
 				AddComponent<SpawnOnLifeTimeExpire>(entity, new() { toSpawn = GetEntity(authoring.toSpawnOnDeath, TransformUsageFlags.Dynamic), count = authoring.spawnCount });
 			AddComponent<InitialSize>(entity, authoring.transform.localScale.x);
-			if (authoring.minlifetime == authoring.maxLifetime)
+			if (authoring.minLifetime == authoring.maxLifetime)
 			{
-				AddComponent<InitialLifeTime>(entity, authoring.minlifetime);
-				AddComponent<RemainingLifeTime>(entity, authoring.minlifetime);
+				AddComponent<InitialLifeTime>(entity, authoring.minLifetime);
+				AddComponent<RemainingLifeTime>(entity, authoring.minLifetime);
 			}
 			else
-				AddComponent<RandomInitialLifeTime>(entity, new(authoring.minlifetime, authoring.maxLifetime));
+				AddComponent<RandomInitialLifeTime>(entity, new(authoring.minLifetime, authoring.maxLifetime));
 		}
 	}
 }
