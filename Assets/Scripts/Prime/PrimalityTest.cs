@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Unity.Burst;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Collections;
 using Unity.Jobs;
@@ -36,8 +35,7 @@ namespace Prime
 			return testMethod switch
 			{
 				TestMethod.Serial => IsPrimeSerial(n, start, end),
-				TestMethod.SerialBurst => IsPrimeSerialBurst(n, start, end),
-				TestMethod.JobBurst => IsPrimeJob(n, start, end),
+				TestMethod.Job => IsPrimeJob(n, start, end),
 				_ => false,
 			};
 		}
@@ -52,10 +50,6 @@ namespace Prime
 			return true;
 		}
 
-		[BurstCompile]
-		private static bool IsPrimeSerialBurst(uint n, uint start, uint end) => IsPrimeSerial(n, start, end);
-
-		[BurstCompile]
 		private static bool IsPrimeJob(uint n, uint start, uint end)
 		{
 			const int BATCH_SIZE = 128;
@@ -87,8 +81,7 @@ namespace Prime
 		public enum TestMethod : byte
 		{
 			Serial,
-			SerialBurst,
-			JobBurst
+			Job
 		}
 	}
 }
