@@ -9,7 +9,7 @@ using Unity.Jobs;
 
 namespace Prime
 {
-	public class PrimalityTest : MonoBehaviour
+	public static class PrimalityTest
 	{
 		/// <summary>
 		/// Numbers below this threshold are trivial to test.
@@ -20,24 +20,14 @@ namespace Prime
 		/// All primes below 256.
 		/// </summary>
 		private static readonly HashSet<byte> TRIVIAL_PRIMES = new()
-	{
-		2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97,
-		101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199,
-		211, 223, 227, 229, 233, 239, 241, 251
-	};
-
-		public uint n = 408469;
-		public TestMethod method;
-
-		[ContextMenu("TestPrime")]
-		public void TestPrimeDebug()
 		{
-			if (TestPrime(n, method))
-				Debug.Log($"\'{n}\' is prime.");
-			else
-				Debug.Log($"\'{n}\' is not prime.");
-		}
+			2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97,
+			101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199,
+			211, 223, 227, 229, 233, 239, 241, 251
+		};
 
+		/// <param name="n">The prime suspect to test.</param>
+		/// <returns>Whether <paramref name="n"/> is prime</returns>
 		public static bool TestPrime(uint n, TestMethod testMethod)
 		{
 			if (IsTrivialToTest(n))
